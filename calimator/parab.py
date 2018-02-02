@@ -51,7 +51,7 @@ angles = [t * 2 * math.pi / 360 / Na * 106 for t in range(0,Na+1)]
 
 N = int(200)
 a = (np.arange(0,N+1) - N/2) * 90/360*2*math.pi/N
-
+#print(a *360 / 2/ math.pi)
 #arr = []
 #for an in angles:
 #	pplot.polar(a, [p1.subs(gamma, an).evalf(subs={psi: t}) for t in a], label='{}'.format(an))
@@ -70,11 +70,13 @@ for i in range(0, len(angles)):
 	arr = np.column_stack((xs,ys,[i*2]*len(xs)))
 	points.append(arr)
 
+#print(points)
+
 
 k = 0;
-cube = mesh.Mesh(np.zeros((len(points)-1) * (len(a)-1) * 2, dtype=mesh.Mesh.dtype))
+cube = mesh.Mesh(np.zeros((len(points)-1) * (len(a)-1) * 2*2, dtype=mesh.Mesh.dtype))
 for i in range(0,len(points) - 1):
-	for j in range(N-1):
+	for j in range(N):
 #for i in range(1):
 #	for j in range(2):
 		cube.vectors[k][0] = points[i][j]
