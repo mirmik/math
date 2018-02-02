@@ -1,4 +1,6 @@
 from sympy import *
+from sympy.plotting import plot3d, plot3d_parametric_surface 
+from sympy.plotting import plot3d, plot_parametric 
 import math
 import numpy as np
 import matplotlib.pyplot as pplot 
@@ -14,7 +16,7 @@ gr = 2*math.pi / 360
 #gamma = pi / 2
 
 xj1q = xright + re * (1 - cos(psi))
-yj1q = (xright + re) * tan(psi) - re * sin(psi)
+yj1q = (xright + re) * tan(psi) - re * sin(psi) #+ y0
 pj1 =  sqrt(xj1q**2 + yj1q**2)
 
 pj2 = pj1 + y0 * sin(psi)
@@ -54,27 +56,38 @@ p1 = (
 )
 p1 = simplify(p1)
 
-ex1 = p1.subs(gamma, 0)
-#ex2 = p1.subs(gamma, pi / 4)
-ex3 = p1.subs(gamma, math.pi/2)
-#ex4 = p1.subs(gamma, pi / 4 * 3)
-ex5 = p1.subs(gamma, 106/360*2*math.pi)
+#exs = [
+#	p1.subs(gamma, 0),
+#	p1.subs(gamma, pi / 16),
+#	p1.subs(gamma, pi / 8),
+#	p1.subs(gamma, pi / 4),
+#	p1.subs(gamma, math.pi/2),
+#	p1.subs(gamma, pi / 4 * 3),
+#	p1.subs(gamma, 106/360*2*math.pi)
+#]
 
-N = 200
-a = (np.arange(0,N) - 100) * 90/360*2*math.pi/N
-b1 = [pj1.subs(psi, t).evalf() for t in a] 
-#b2 = [ex2.subs(psi, t).evalf() for t in a] 
-b3 = [ex3.subs(psi, t).evalf() for t in a] 
-#b4 = [ex4.subs(psi, t).evalf() for t in a] 
-b5 = [ex5.subs(psi, t).evalf() for t in a] 
+angles = [0, pi/16, pi/8, pi/4, pi/2, 106*gr]
+
+#plot_parametric(p1*cos(psi), p1*sin(psi), (gamma, 0, 106*gr), (psi, -45*gr, 45*gr))
+#plot_parametric(exs[0]*cos(psi), exs[0]*sin(psi), (psi, -math.pi/4, math.pi/4))
+
+N = 20
+a = (np.arange(0,N+1) - N/2) * 90/360*2*math.pi/N
+#b = [[exs[i].evalf(subs={psi: t}) for t in a] for i in range(0, len(exs))]
+
+#ax = pplot.subplot(111, polar=True)
+
+arr = []
+for an in angles:
+	pplot.polar(a, [p1.subs(gamma, an).evalf(subs={psi: t}) for t in a], label='{}'.format(an))
+	#arr.append(a)
+	#arr.append([p1.subs(gamma, an).evalf(subs={psi: t}) for t in a])
+	#arr.append
 #
-pplot.polar(
-	a, b1, 
-	#a, b2,
-	a, b3,
-	#a, b4,
-	a, b5
-)
+#pplot.polar(
+#	*arr
+#)
+pplot.legend()
 pplot.show()
 
 
