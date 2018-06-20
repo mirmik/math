@@ -137,7 +137,7 @@ v = np.array([ 0, 0, 0])
 for i, x in enumerate(A):
 
 	p = v.dot(x)
-	y = Y[i]
+	y = Y[i]#
 
 	e = y - p
 
