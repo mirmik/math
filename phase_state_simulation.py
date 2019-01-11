@@ -33,7 +33,7 @@ def matrix_discretization(A,B,C,D,Step):
 #d2x/dt^2 = Ddx/dt + Kx
 
 A = np.mat('''	0 1;
-				-1 -1''') # собственная матрица
+				-1 0''') # собственная матрица
 
 B = np.mat('''	0;
 				-1''') # входная матрица
@@ -49,7 +49,7 @@ def g(time ):	#генератор входного сигнала
 	return np.mat(10)
 
 Time = 20			#симулируемый интервал времени
-Points = 5001		#Количество итераций
+Points = 201		#Количество итераций
 Range = np.r_[0 : Time : Points * 1j] # генерация объекта Range
 Step = Range[1] - Range[0]
 
