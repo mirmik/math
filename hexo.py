@@ -38,6 +38,11 @@ pprint(Eq(q0, atan2(y,x)))
 pprint(Eq(q1, slv0.unlazy()[0].subs({beta:atan2(z, h), r:sqrt(z**2+h**2)})))
 pprint(Eq(q2, slv0.unlazy()[1].subs({beta:atan2(z, h), r:sqrt(z**2+h**2)})))
 
+
+print(Eq(q0, atan2(y,x)))
+print(Eq(q1, slv0.unlazy()[0].subs({beta:atan2(z, h), r:sqrt(z**2+h**2)})))
+print(Eq(q2, slv0.unlazy()[1].subs({beta:atan2(z, h), r:sqrt(z**2+h**2)})))
+
 #pprint(slv0.unlazy())
 #pprint(slv1.unlazy())
 #pprint(slv0[0].unlazy())
