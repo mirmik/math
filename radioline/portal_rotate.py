@@ -3,8 +3,10 @@
 from sympy import *
 from sympy.algebras.quaternion import Quaternion
 
-var("q0 q3 p0 p1 i j k x y z")
+var("q0 q1 q2 q3 p0 p1 p2 p3 i j k x y z yz xz")
 
+#Q = Quaternion(q0, 0, 0, q3)
+#P = Quaternion(p0, p1, 0, 0)
 Q = Quaternion(q0, 0, 0, q3)
 P = Quaternion(p0, p1, 0, 0)
 Qs = conjugate(Q)
@@ -12,19 +14,12 @@ Ps = conjugate(P)
 
 pprint(Qs)
 
-ee = Q*P*Quaternion(0,0,0,1)*Ps*Qs
+ee = (Q*P)*Quaternion(0,0,1,0)*conjugate(Q*P)
 e = ee.a + ee.b * i + ee.c * j + ee.d * k
 
 pprint(simplify(e))
 
-res = solve(
-	(
-		Eq(ee.b, x), Eq(ee.c, y), Eq(ee.d, z),
-		Eq(x**2 + y**2 + z**2, 1),
-		Eq(p0**2 + p1**2, 1),
-		Eq(q0**2 + q3**2, 1),
-	),
-	(p1, q3)
-)
+#eee = solve(Eq(2*p1*sqrt(1-p1), z), (p1))
+#pprint(eee)
 
-pprint(res)
+pprint(solve(Eq(4*q0**4 - 4*yz*q0**2 - xz**2), (q0)))
