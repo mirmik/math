@@ -12,14 +12,16 @@ P = Quaternion(p0, p1, 0, 0)
 Qs = conjugate(Q)
 Ps = conjugate(P)
 
-pprint(Qs)
-
-ee = (Q*P)*Quaternion(0,0,1,0)*conjugate(Q*P)
+#pprint(Qs)
+R = P*Q
+ee = (R)*Quaternion(0,0,1,0)*conjugate(R)
+#a = (P)*Quaternion(0,0,1,0)*conjugate(P)
 e = ee.a + ee.b * i + ee.c * j + ee.d * k
 
+#pprint(simplify(a))
 pprint(simplify(e))
 
 #eee = solve(Eq(2*p1*sqrt(1-p1), z), (p1))
 #pprint(eee)
 
-pprint(solve(Eq(4*q0**4 - 4*yz*q0**2 - xz**2), (q0)))
+#pprint(solve(Eq(4*q0**4 - 4*yz*q0**2 - xz**2), (q0)))
