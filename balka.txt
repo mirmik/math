@@ -1,0 +1,70 @@
+
+d(x,t) = V
+d(V,t) = M**-1 U
+
+V = M**-1 F (1/s) = Wo F
+Wr = ( Kp + Ki/s )
+
+F = ( Kp + Ki/s ) E = Wr E
+
+E = U - V
+
+
+w(U,V) = Wr * Wo / (1 + Wr * Wo) 
+
+Wz = (Ki + Kp*s)/(Ki + Kp*s + M*s**2)
+
+
+Ki + Kp*s + M*s**2 = 0
+
+1 + (Kp/Ki)*s + (M/Ki)*s**2 = 0
+
+Ki/M + Kp/M *s + s**2 = 0
+
+Kp/M=-c1-c2
+Ki/M=c1*c2
+
+Kp = M * (T1 + T2)
+Ki = T1 * T2 * M
+
+Kp/M=-c1-Ki/M/c1
+
+
+
+T**2 == M/Ki
+Kp/Ki == 2*ksi*T
+ksi = Kp/Ki/2/T
+
+
+Ki = M / T**2
+Kp = ksi*M*2/T
+
+
+
+(a s + 1)(b s + 1) == 0
+
+c1 * e**(-at) + c2 * e**(-bt)  = 0
+c1 * e**(-at) + b/a*c2 * e**(-bt)  = 0
+
+x(0) = 1 = c1 + c2
+v(0) = 0 = c1*a + c2*b
+
+0 = c1 + c2 *b/a
+1 = c2 - c2 *b/a
+
+c2 = a / (a-b)
+c1 = - b / (a-b)
+
+
+c1 * e**(at) + c2 * e**(at) * t  = x(t)
+c1 * a * e**(at) + a * c2 * e**(at) * t + c2 * e**(at)  = v(t)
+
+c1 + c2 = 1
+c1 * a + c2 = 0 
+
+c2 = -c1 * a
+
+c1 - c1 * a = 1
+
+c1 = 1/(1-a)
+c2 = 1/(1-1/a)
