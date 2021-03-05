@@ -1,0 +1,350 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+
+namespace maximum_finder
+{
+
+	public enum Dirs
+	{
+		CL, CR, CU, CD, CC, LU, RU, LD, RD
+	}
+
+	public struct LocalMaximum
+	{
+		public int i;
+		public int j;
+		public double data;
+		public double filtered;
+		public int wide;
+
+		public LocalMaximum(int i, int j, double data, int wide, double filtered)
+		{
+			this.i = i;
+			this.j = j;
+			this.data = data;
+			this.wide = wide;
+			this.filtered = filtered;
+		}
+
+		public override string ToString()
+		{
+			StringBuilder sb = new StringBuilder("");
+			using (StringWriter sw = new StringWriter(sb))
+			{
+				sw.Write("LocalMaximum(i:{0},j:{1},data:{2},wide:{3},filt:{4})", i, j, data, wide, filtered);
+			}
+			return sb.ToString();
+		}
+	}
+
+	public class MaximumRanger
+	{
+		public double[,] Values {private set; get;}
+		public double[,] FilteredValues {private set; get;}
+		public double[,] InputValues {private set; get;}
+		public Dirs[,] Gradients {private set; get;}
+		public int[,] Counters {private set; get;}
+
+		int m; // rows
+		int n; // cols
+
+		public MaximumRanger(double[,] data)
+		{
+			Init(data);
+		}
+
+		public void Doit()
+		{
+			EvaluateGradients();
+			CountersRain();
+		}
+
+		public void Init(double[,] data)
+		{
+			this.Values = (double[,]) data.Clone();
+			this.InputValues = (double[,]) data.Clone();
+			this.Values = data;
+			this.InputValues = data;
+			this.m = data.GetLength(0);
+			this.n = data.GetLength(1);
+			this.Gradients = new Dirs[m, n];
+			this.Counters = new int[m, n];
+		}
+
+		public bool CheckCoords(int i, int j)
+		{
+			return !(i < 0 || i >= m || j < 0 || j >= n);
+		}
+
+		public Dirs EvalGradient(int i, int j)
+		{
+			Dirs local_gradient = Dirs.CC;
+			double val = Values[i, j];
+
+			void foo(int a, int b, Dirs setteble_index)
+			{
+				if (CheckCoords(a, b) && Values[a, b] > val)
+				{
+					val = Values[a, b];
+					local_gradient = setteble_index;
+				}
+			}
+			foo(i - 1, j, Dirs.CU);
+			foo(i + 1, j, Dirs.CD);
+			foo(i, j + 1, Dirs.CR);
+			foo(i, j - 1, Dirs.CL);
+			foo(i + 1, j - 1, Dirs.LD);
+			foo(i - 1, j - 1, Dirs.LU);
+			foo(i + 1, j + 1, Dirs.RD);
+			foo(i - 1, j + 1, Dirs.RU);
+
+			return local_gradient;
+		}
+
+		public void EvaluateGradients()
+		{
+			for (int i = 0; i < m; ++i)
+				for (int j = 0; j < n; ++j)
+					Gradients[i, j] = EvalGradient(i, j);
+		}
+
+		public (int a, int b) GradientRun(int i, int j)
+		{
+			Dirs dir;
+			int step = 0;
+			int maxstep = m * n;
+			while ((dir = Gradients[i, j]) != Dirs.CC)
+			{
+				switch (dir)
+				{
+					case Dirs.CL: j--; break;
+					case Dirs.CD: i++; break;
+					case Dirs.CU: i--; break;
+					case Dirs.CR: j++; break;
+					case Dirs.LD: j--; i++; break;
+					case Dirs.LU: j--; i--; break;
+					case Dirs.RD: j++; i++; break;
+					case Dirs.RU: j++; i--; break;
+				}
+				step++;
+
+				if (!CheckCoords(i, j)) { throw new Exception("GradientRun failed: Coords isn't valid"); }
+				if (step > maxstep) { throw new Exception("GradientRun failed: Infinity loop"); }
+			}
+
+			return (i, j);
+		}
+
+		public void CountersRain()
+		{
+			for (int i = 0; i < m; ++i)
+				for (int j = 0; j < n; ++j)
+				{
+					Counters[i, j] = 0;
+				}
+
+			for (int i = 0; i < m; ++i)
+				for (int j = 0; j < n; ++j)
+				{
+					(int a, int b) = GradientRun(i, j);
+					Counters[a, b]++;
+				}
+		}
+
+		public void CountersRainCorrection()
+		{
+			for (int i = 0; i < m; ++i)
+				for (int j = 0; j < n; ++j)
+				{
+					if (Counters[i, j] == 0) 
+						continue;
+
+					int save = Counters[i,j];	
+					(int a, int b) = GradientRun(i, j);
+					if (i == a && j == b)
+						continue;
+
+					Console.WriteLine("correction");
+					Counters[i, j] = 0;
+					Counters[a, b] += save;
+				}
+		}
+
+		public List<LocalMaximum> GetRanged()
+		{
+			List<LocalMaximum> list = new List<LocalMaximum>();
+
+			for (int i = 0; i < m; ++i)
+				for (int j = 0; j < n; ++j)
+				{
+					if (Counters[i, j] != 0) list.Add(
+						    new LocalMaximum(i, j, 
+						    	InputValues[i, j], 
+						    	Counters[i, j],
+						    	FilteredValues[i,j])
+						);
+				}
+
+			list.Sort((x, y) => x.data.CompareTo(y.data));
+			return list;
+		}
+
+		static List<LocalMaximum> FindRanged(double[,] arr)
+		{
+			var algo = new MaximumRanger(arr);
+			algo.Filter();
+			algo.EvaluateGradients();
+			algo.CountersRain();
+			return algo.GetRanged();
+		}
+
+		public class Square33Filter
+		{
+			double[,] flt = new double[3, 3];
+
+			public Square33Filter()
+			{
+				Fill();
+			}
+
+			public void Fill()
+			{
+				for (int i = 0; i < 3; i++)
+					for (int j = 0; j < 3; j++)
+						flt[i, j] = 1.0 / 9.0;
+			}
+
+			public double this[int i, int j]
+			{
+				get {return flt[i + 1, j + 1];}
+				set {flt[i + 1, j + 1] = value;}
+			}
+
+			bool CheckCoords(double[,] target, int a, int b, int i,int j) 
+			{
+				return a + i > 0 && a + i < target.GetLength(0)
+						        && b + i > 0 && b + i < target.GetLength(1);
+			}
+
+			public double ApplyPoint(double[,] target, int a, int b)
+			{
+				double sum = 0;
+				for (int i = -1; i <= 1; ++i)
+					for (int j = -1; j <= 1; ++j)
+						if (CheckCoords(target,a,b,i,j))
+						{
+							sum += target[a + i, b + i] * this[i, j];
+						}
+						else
+						{
+							sum += target[a, b] * this[i, j];
+						}
+				return sum;
+			}
+
+			public double[,] Apply(double[,] target)
+			{
+				double[,] ret = new double[
+				    target.GetLength(0), target.GetLength(1)];
+
+				for (int i = 0; i < target.GetLength(0); i++)
+					for (int j = 0; j < target.GetLength(0); j++)
+					{
+						ret[i, j] = ApplyPoint(target, i, j);
+					}
+
+				return ret;
+			}
+		}
+
+		public void Filter()
+		{
+			var filter = new Square33Filter();
+			Values = filter.Apply(Values);
+			FilteredValues = Values;
+		}
+
+		public void ResetData() 
+		{
+			Values = InputValues;
+		}
+	}
+
+
+	class Program
+	{
+		static void Main(string[] args)
+		{
+			//var file = File.Open("test.csv", FileMode.Open);
+
+			var lines = File.ReadAllLines("test.csv");
+			Console.WriteLine("lines: {0}", lines.Length);
+			int M = lines.Length;
+			int N = lines[0].Split(',').Length - 1;
+
+			double[,] arr = new double[M,N];
+
+			for ( int i = 0; i < M; i++ ) 
+			{
+				var lst = lines[i].Split(',');
+				for ( int j = 0; j < N; j++ ) 
+				{
+					arr[i,j] = Convert.ToDouble(lst[j]); 
+				}
+			}
+
+			for (int i = 0; i < M; ++i)
+			{
+				for (int j = 0; j < N; ++j)
+				{
+					//arr[i, j] =
+					//    Math.Max(
+					//        -((i - 10) * (i - 10) + (j - 4) * (j - 4)),
+					//        -((i - 10) * (i - 10) + (j - 16) * (j - 16)) - 2) +
+
+					//    random.NextDouble() * 10;
+
+					Console.Write("{0} ", arr[i, j]);
+				}
+				Console.WriteLine();
+			}
+
+			var ranger = new MaximumRanger(arr);
+			ranger.Filter();
+			ranger.EvaluateGradients();
+
+
+			for (int i = 0; i < M; ++i)
+			{
+				for (int j = 0; j < N; ++j)
+				{
+					Console.Write("{0} ", ranger.Gradients[i, j]);
+				}
+				Console.WriteLine();
+			}
+
+			ranger.CountersRain();
+
+			for (int i = 0; i < M; ++i)
+			{
+				for (int j = 0; j < N; ++j)
+				{
+					Console.Write("{0} ", ranger.Counters[i, j]);
+				}
+				Console.WriteLine();
+			}
+			ranger.ResetData();
+			ranger.EvaluateGradients();
+			ranger.CountersRainCorrection();
+
+			var list = ranger.GetRanged();
+
+			foreach (var a in list)
+			{
+				Console.WriteLine(a);
+			}
+		}
+	}
+}
