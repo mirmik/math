@@ -39,7 +39,7 @@ namespace maximum_finder
 		}
 	}
 
-	public class MaximumRanger
+	public class LocalMaximumFinder
 	{
 		public double[,] Values {private set; get;}
 		public double[,] FilteredValues {private set; get;}
@@ -50,7 +50,7 @@ namespace maximum_finder
 		int m; // rows
 		int n; // cols
 
-		public MaximumRanger(double[,] data)
+		public LocalMaximumFinder(double[,] data)
 		{
 			Init(data);
 		}
@@ -193,10 +193,13 @@ namespace maximum_finder
 
 		static List<LocalMaximum> FindRanged(double[,] arr)
 		{
-			var algo = new MaximumRanger(arr);
+			var algo = new LocalMaximumFinder(arr);
 			algo.Filter();
 			algo.EvaluateGradients();
 			algo.CountersRain();
+			algo.ResetData();
+			algo.EvaluateGradients();
+			algo.CountersRainCorrection();
 			return algo.GetRanged();
 		}
 
@@ -311,7 +314,7 @@ namespace maximum_finder
 				Console.WriteLine();
 			}
 
-			var ranger = new MaximumRanger(arr);
+			var ranger = new LocalMaximumFinder(arr);
 			ranger.Filter();
 			ranger.EvaluateGradients();
 
