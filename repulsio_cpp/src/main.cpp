@@ -41,21 +41,23 @@ public:
                                       random_float(-0.01, 0.01)};
 
         _pos += _vel * dt;
-        if (_pos.x < A.x || _pos.x > B.x)
+
+        // if ball is out of box, it velosity is reversed
+        /*if (_pos.x < A.x || _pos.x > B.x)
         {
             _vel.x = -_vel.x;
-            _pos.x = std::clamp(_pos.x, A.x, B.x);
+            _pos.x = std::min(std::max(_pos.x, A.x), B.x);
         }
         if (_pos.y < A.y || _pos.y > B.y)
         {
             _vel.y = -_vel.y;
-            _pos.y = std::clamp(_pos.y, A.y, B.y);
+            _pos.y = std::min(std::max(_pos.y, A.y), B.y);
         }
         if (_pos.z < A.z || _pos.z > B.z)
         {
             _vel.z = -_vel.z;
-            _pos.z = std::clamp(_pos.z, A.z, B.z);
-        }
+            _pos.z = std::min(std::max(_pos.z, A.z), B.z);
+        }*/
     }
 
     void apply_demping(float dt)
@@ -78,12 +80,15 @@ public:
         return _vel;
     }
 
-    linalg::vec<float, 3> force(const Ball &other) const
+    linalg::vec<float, 3> force(const Ball &other,
+                                linalg::vec<float, 3> A,
+                                linalg::vec<float, 3> B) const
     {
+
         auto r = _pos - other._pos;
         auto d = length(r);
-        auto f = 100.0f / (d * d * d) * r;
-        return f;
+        auto f = 500.0f / (d * d * d) * r;
+        return -f;
     }
 };
 
@@ -184,7 +189,9 @@ int main()
     std::vector<std::pair<rabbit::vec3f, rabbit::vec3f>> cube_lines =
         make_box_lines(A, B);
 
-    std::vector<Ball> balls = create_balls(24, A, B, -10, 10);
+    std::vector<Ball> balls; // = create_balls(2, A, B, -10, 10);
+    balls.push_back(Ball({0, -5, 0}, {5, 0, 0}));
+    balls.push_back(Ball({0, 5, 0}, {-5, 0, 0}));
 
     while (!glfwWindowShouldClose(window))
     {
@@ -193,8 +200,9 @@ int main()
         drawer.clean(0.2f, 0.3f, 0.3f, 1.0f);
 
         auto curtime = glfwGetTime();
-        camera.set_eye(rabbit::vec3f{
-            float(20 * cos(curtime / 2)), float(20 * sin(curtime / 2)), 18});
+        camera.set_eye(rabbit::vec3f{float(20 + 0.1 * cos(curtime * 16)),
+                                     float(20 + 0.1 * sin(curtime * 16)),
+                                     18});
         camera.correct_up();
         camera.set_target(rabbit::vec3f{0, 0, 0});
 
@@ -205,11 +213,11 @@ int main()
                 if (&ball == &other)
                     continue;
 
-                auto f = ball.force(other);
+                auto f = ball.force(other, A, B);
                 ball.apply_force(f, delta);
             }
 
-            ball.apply_demping(delta);
+            // ball.apply_demping(delta);
             ball.update(delta, A, B);
 
             auto color = position_to_color(ball.pos(), A, B);
